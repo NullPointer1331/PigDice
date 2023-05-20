@@ -12,25 +12,28 @@ class player{
 }
 
 class game{
-    player1:player;
-    player2:player;
     turnTotal:number;
     player1Turn:boolean;
+    gameWon:boolean;
 }
+
+const WINNING_SCORE = 100;
+var player1 = new player();
+var player2 = new player();
+var thisGame = new game();
 
 function changePlayers():void{
     let currentPlayer = $("current");
-    let player1Name = (<HTMLInputElement>$("player1")).value;
-    let player2Name = (<HTMLInputElement>$("player2")).value;
 
     //swap from player to player by comparing current name to player names
     //set currentPlayerName to the next player
-    if(currentPlayer.innerText == player1Name){
-        currentPlayer.innerText = player2Name;
+    if(thisGame.player1Turn){
+        currentPlayer.innerText = player2.name;
     }
     else{
-        currentPlayer.innerText = player1Name;
+        currentPlayer.innerText = player1.name;
     }
+    thisGame.player1Turn = !thisGame.player1Turn;
 }
 
 window.onload = function(){
@@ -64,16 +67,34 @@ function createNewGame(){
     //if both players do have a name start the game!
     if(isTextPresent("player1", "Player 1 name is required") && isTextPresent("player2", "Player 2 name is required")){
         $("turn").classList.add("open");
-        (<HTMLInputElement>$("total")).value = "0";
         //lock in player names and then change players
         $("player1").setAttribute("disabled", "disabled");
         $("player2").setAttribute("disabled", "disabled");
+        setDefaults();
         changePlayers();
     }
 }
 
+function setDefaults(){
+    //reset player 1 and player 2 scores to 0
+    //reset player 1 and player 2 names to empty strings
+    //reset turn total to 0
+    //reset player 1 turn to true
+    //reset the die and total textboxes to empty strings
+    (<HTMLInputElement>$("score1")).value = "0";
+    (<HTMLInputElement>$("score2")).value = "0";
+    (<HTMLInputElement>$("total")).value = "";
+    (<HTMLInputElement>$("die")).value = "";
+    player1.name = (<HTMLInputElement>$("player1")).value;
+    player1.score = 0;
+    player2.name = (<HTMLInputElement>$("player2")).value;
+    player2.score = 0;
+    thisGame.player1Turn = false;
+    thisGame.turnTotal = 0;
+    thisGame.gameWon = false;
+}
+
 function rollDie():void{
-    let currTotal = parseInt((<HTMLInputElement>$("total")).value);
     let dieRoll = generateRandomValue(1, 6);
 
     //if the roll is 1
@@ -83,26 +104,47 @@ function rollDie():void{
     //if the roll is greater than 1
     //  add roll value to current total
     if(dieRoll == 1){
-        currTotal = 0;
+        thisGame.turnTotal = 0;
         changePlayers();
     }
     else{
-        currTotal += dieRoll;
+        thisGame.turnTotal += dieRoll;
     }
     
     //set the die roll to value player rolled
     //display current total on form
     (<HTMLInputElement>$("die")).value = dieRoll.toString();
-    (<HTMLInputElement>$("total")).value = currTotal.toString();
+    (<HTMLInputElement>$("total")).value = thisGame.turnTotal.toString();
 }
 
 function holdDie():void{
     //get the current turn total
     //determine who the current player is
     //add the current turn total to the player's total score
-
+    if(thisGame.player1Turn){
+        player1.score += thisGame.turnTotal;
+        (<HTMLInputElement>$("score1")).value = player1.score.toString();
+        
+    }
+    else{
+        player2.score += thisGame.turnTotal;
+        (<HTMLInputElement>$("score2")).value = player2.score.toString();
+    }
     //reset the turn total to 0
-
+    thisGame.turnTotal = 0;
+    (<HTMLInputElement>$("total")).value = thisGame.turnTotal.toString();
+    (<HTMLInputElement>$("die")).value = "";
     //change players
     changePlayers();
+    //check for victory
+    if(!thisGame.gameWon){
+        if(player1.score >= WINNING_SCORE){
+            alert(player1.name + " wins! \n Click new game to play again, or you can continue this game for as long as you want.");
+            thisGame.gameWon = true;
+        }
+        if(player2.score >= WINNING_SCORE){
+            alert(player2.name + " wins! \n Click new game to play again, or you can continue this game for as long as you want.");
+            thisGame.gameWon = true;
+        }
+    }
 }
