@@ -1,19 +1,28 @@
 function generateRandomValue(minValue, maxValue) {
-    var random = Math.random();
-    return random;
+    return Math.floor(Math.random() * (maxValue - minValue + 1) + minValue);
 }
 function $(element) {
     return document.getElementById(element);
 }
+var player = (function () {
+    function player() {
+    }
+    return player;
+}());
+var game = (function () {
+    function game() {
+    }
+    return game;
+}());
 function changePlayers() {
-    var currentPlayerName = $("current").innerText;
+    var currentPlayer = $("current");
     var player1Name = $("player1").value;
     var player2Name = $("player2").value;
-    if (currentPlayerName == player1Name) {
-        currentPlayerName = player2Name;
+    if (currentPlayer.innerText == player1Name) {
+        currentPlayer.innerText = player2Name;
     }
     else {
-        currentPlayerName = player1Name;
+        currentPlayer.innerText = player1Name;
     }
 }
 window.onload = function () {
@@ -23,25 +32,34 @@ window.onload = function () {
     $("hold").onclick = holdDie;
 };
 function isTextPresent(id, errMsg) {
-    var txtBox = $(id);
-    var txtBoxValue = txtBox.value;
-    var errSpan = txtBox.nextElementSibling;
+    var txtBoxValue = $(id).value;
     if (txtBoxValue == "") {
-        errSpan.innerText = errMsg;
+        alert(errMsg);
         return false;
     }
-    errSpan.innerText = "*";
     return true;
 }
 function createNewGame() {
-    $("turn").classList.add("open");
-    $("total").value = "0";
-    $("player1").setAttribute("disabled", "disabled");
-    $("player2").setAttribute("disabled", "disabled");
-    changePlayers();
+    if (isTextPresent("player1", "Player 1 name is required") && isTextPresent("player2", "Player 2 name is required")) {
+        $("turn").classList.add("open");
+        $("total").value = "0";
+        $("player1").setAttribute("disabled", "disabled");
+        $("player2").setAttribute("disabled", "disabled");
+        changePlayers();
+    }
 }
 function rollDie() {
     var currTotal = parseInt($("total").value);
+    var dieRoll = generateRandomValue(1, 6);
+    if (dieRoll == 1) {
+        currTotal = 0;
+        changePlayers();
+    }
+    else {
+        currTotal += dieRoll;
+    }
+    $("die").value = dieRoll.toString();
+    $("total").value = currTotal.toString();
 }
 function holdDie() {
     changePlayers();
